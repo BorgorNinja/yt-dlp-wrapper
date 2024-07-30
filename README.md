@@ -49,7 +49,7 @@ yt-dlp wrapper is a simple Video Downloader. The application uses `yt-dlp` to ha
    python yt-dlp-wrapper.py
    ```
 
-2. **Enter the YouTube URL in the provided text box.**
+2. **Enter the Video URL in the provided text box.**
 
 3. **Click `Check URL` to verify the link.**
 
