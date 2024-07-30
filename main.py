@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import sys
 import subprocess
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton,
