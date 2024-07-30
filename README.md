@@ -1,6 +1,6 @@
-# YouTube Downloader
+# yt-dlp wrapper
 
-YouTube Downloader is a simple GUI application that allows users to download individual YouTube videos or entire playlists. The application uses `yt-dlp` to handle video downloading and provides options to select the save location for each video.
+yt-dlp wrapper is a simple Video Downloader. The application uses `yt-dlp` to handle video downloading and provides options to select the save location for each video.
 
 ## Features
 
@@ -73,7 +73,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Acknowledgments
 
-- This application uses the [yt-dlp](https://github.com/yt-dlp/yt-dlp) library for downloading YouTube videos.
+- This application uses the [yt-dlp](https://github.com/yt-dlp/yt-dlp) library for downloading videos.
 - The GUI is built using [PyQt5](https://riverbankcomputing.com/software/pyqt/intro).
 - Thanks to the developers of these libraries for their hard work.
 
