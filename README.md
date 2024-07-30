@@ -4,8 +4,8 @@ yt-dlp wrapper is a simple Video Downloader. The application uses `yt-dlp` to ha
 
 ## Features
 
-- Download individual YouTube videos.
-- Batch download entire YouTube playlists.
+- Download individual videos.
+- Batch download playlists.
 - Select the save location for each video.
 - View download progress and detailed logs in the console output.
 - Play video previews directly from the application.
@@ -22,8 +22,8 @@ yt-dlp wrapper is a simple Video Downloader. The application uses `yt-dlp` to ha
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/yourusername/youtube-downloader.git
-   cd youtube-downloader
+   git clone https://github.com/BorgorNinja/yt-dlp-wrapper.git
+   cd yt-dlp-wrapper
    ```
 
 2. **Install the required dependencies:**
@@ -46,7 +46,7 @@ yt-dlp wrapper is a simple Video Downloader. The application uses `yt-dlp` to ha
 1. **Run the application:**
 
    ```bash
-   python youtube_downloader.py
+   python yt-dlp-wrapper.py
    ```
 
 2. **Enter the YouTube URL in the provided text box.**
