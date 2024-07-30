@@ -76,7 +76,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - This application uses the [yt-dlp](https://github.com/yt-dlp/yt-dlp) library for downloading videos.
 - The GUI is built using [PyQt5](https://riverbankcomputing.com/software/pyqt/intro).
 - Thanks to the developers of these libraries for their hard work.
-
-
-
-Feel free to customize this README file as per your needs and update the repository URL and other specific details.
