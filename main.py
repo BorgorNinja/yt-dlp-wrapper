@@ -108,6 +108,74 @@ class YouTubeDownloader(QMainWindow):
         default_dir_action.triggered.connect(self.set_default_directory)
         settings_menu.addAction(default_dir_action)
 
+        material_action = QAction('Apply Material Design', self)
+        material_action.triggered.connect(self.apply_material_design)
+        settings_menu.addAction(material_action)
+
+    def apply_material_design(self):
+        material_stylesheet = """
+        QWidget {
+            background-color: #fafafa;
+            font-family: Roboto, sans-serif;
+            color: #212121;
+        }
+        QPushButton {
+            background-color: #6200ee;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        QPushButton:hover {
+            background-color: #3700b3;
+        }
+        QLineEdit, QTextEdit {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 4px;
+            background-color: white;
+        }
+        QProgressBar {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #eeeeee;
+            text-align: center;
+        }
+        QProgressBar::chunk {
+            background-color: #6200ee;
+            width: 20px;
+        }
+        QComboBox {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 4px;
+            background-color: white;
+        }
+        QMenuBar {
+            background-color: #6200ee;
+            color: white;
+        }
+        QMenuBar::item {
+            background-color: #6200ee;
+            color: white;
+            padding: 5px 10px;
+        }
+        QMenuBar::item:selected {
+            background-color: #3700b3;
+        }
+        QMenu {
+            background-color: white;
+            color: #212121;
+        }
+        QMenu::item:selected {
+            background-color: #eeeeee;
+        }
+        """
+        app = QApplication.instance()
+        app.setStyleSheet(material_stylesheet)
+        self.console_output.append("Material Design applied.")
+
     def set_default_directory(self):
         directory = QFileDialog.getExistingDirectory(self, "Select Default Download Directory")
         if directory:
@@ -161,8 +229,11 @@ class YouTubeDownloader(QMainWindow):
         if 'entries' in info_dict:
             self.console_output.append('Playlist detected:')
             for entry in info_dict['entries']:
-                self.video_urls.append(entry['url'])
-                self.console_output.append(entry['url'])
+                video_url = entry['url']
+                if not video_url.startswith("http"):
+                    video_url = "https://www.youtube.com/watch?v=" + video_url
+                self.video_urls.append(video_url)
+                self.console_output.append(video_url)
             self.batch_download_button.setVisible(True)
             self.batch_audio_download_button.setVisible(True)
         else:
@@ -296,6 +367,7 @@ class DownloadThread(QThread):
                 'yt-dlp',
                 '--add-header', f'User-Agent: {headers["User-Agent"]}',
                 '-f', quality_param,
+                '--recode-video', 'mp4',
                 '-o', self.save_path,
                 self.url
             ]
@@ -326,7 +398,13 @@ class DownloadThread(QThread):
 
         stdout, stderr = process.communicate()
         if process.returncode != 0:
-            self.finished.emit(False, stderr)
+            err_lower = stderr.lower()
+            # Automatic fallback to skip private/unavailable videos
+            if "private" in err_lower or "not found" in err_lower or "extractorerror" in err_lower:
+                self.console_update.emit(f"Skipping video: {self.url} because it is private or unavailable.")
+                self.finished.emit(True, "Skipped private/unavailable video.")
+            else:
+                self.finished.emit(False, stderr)
             return
 
         self.finished.emit(True, '')
@@ -372,6 +450,7 @@ class BatchDownloadThread(QThread):
                     'yt-dlp',
                     '--add-header', f'User-Agent: {headers["User-Agent"]}',
                     '-f', quality_param,
+                    '--recode-video', 'mp4',
                     '-o', os.path.join(self.save_dir, '%(title)s.%(ext)s'),
                     url
                 ]
@@ -393,8 +472,15 @@ class BatchDownloadThread(QThread):
 
             stdout, stderr = process.communicate()
             if process.returncode != 0:
-                self.finished.emit(False, stderr)
-                return
+                err_lower = stderr.lower()
+                # Automatic fallback to skip private/unavailable videos
+                if "private" in err_lower or "not found" in err_lower or "extractorerror" in err_lower:
+                    self.console_update.emit(f"Skipping video: {url} because it is private or unavailable.")
+                    self.progress_update.emit(int((i + 1) / len(self.urls) * 100))
+                    continue
+                else:
+                    self.finished.emit(False, stderr)
+                    return
 
             self.progress_update.emit(int((i + 1) / len(self.urls) * 100))
 
