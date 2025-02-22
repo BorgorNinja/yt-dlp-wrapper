@@ -1,4 +1,6 @@
+PyQt5
+PyQtWebEngine
 requests
-bs4
+yt-dlp
+requests
 lxml
-pyqt5
