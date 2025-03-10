@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 import sys
 import subprocess
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton,
@@ -12,7 +11,51 @@ import webbrowser
 import os
 import yt_dlp
 import json
+import asyncio
 
+# --- New Helper Functions for Bypass Extraction ---
+
+def get_cookies_headless(video_url):
+    """
+    Placeholder for headless cookie extraction.
+    For a full implementation, you might use pyppeteer or Selenium to get valid cookies.
+    """
+    # For now, simply return an empty string.
+    return ""
+
+def save_cookies_to_file(cookies, path):
+    with open(path, 'w') as f:
+        f.write(cookies)
+
+def extract_with_bypass(url):
+    """
+    Attempt a normal extraction first. If that fails, try using cookies.
+    """
+    ydl_opts = {
+        'quiet': True,
+        'dump_single_json': True,
+        'extract_flat': True,
+        'headers': {
+            'User-Agent': ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                           'AppleWebKit/537.36 (KHTML, like Gecko) '
+                           'Chrome/58.0.3029.110 Safari/537.3')
+        }
+    }
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+        return ("no_cookies", info)
+    except Exception as e:
+        print("Normal extraction failed, attempting fallback with cookies:", e)
+        if not os.path.exists("cookies.txt"):
+            cookies = asyncio.run(get_cookies_headless(url))
+            save_cookies_to_file(cookies, "cookies.txt")
+        ydl_opts['cookies'] = "cookies.txt"
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+        return ("cookies", info)
+
+# --- Main Application Code ---
 
 class YouTubeDownloader(QMainWindow):
     def __init__(self):
@@ -127,24 +170,11 @@ class YouTubeDownloader(QMainWindow):
             QMessageBox.warning(self, 'Error', 'Please enter a valid YouTube URL')
             return
 
-        ydl_opts = {
-            'quiet': True,
-            'dump_single_json': True,
-            'extract_flat': True,
-            'headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
-            }
-        }
-
         try:
-            info_dict = self.extract_info(url, ydl_opts)
+            mode, info_dict = extract_with_bypass(url)
             self.handle_url_info(info_dict)
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'Failed to extract info: {str(e)}')
-
-    def extract_info(self, url, ydl_opts):
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            return ydl.extract_info(url, download=False)
 
     def handle_url_info(self, info_dict):
         self.console_output.clear()
@@ -281,7 +311,9 @@ class DownloadThread(QThread):
 
     def run(self):
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+            'User-Agent': ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                           'AppleWebKit/537.36 (KHTML, like Gecko) '
+                           'Chrome/58.0.3029.110 Safari/537.3')
         }
         quality_param = {
             'Best': 'best',
@@ -365,7 +397,9 @@ class BatchDownloadThread(QThread):
 
         for i, url in enumerate(self.urls):
             headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+                'User-Agent': ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                               'AppleWebKit/537.36 (KHTML, like Gecko) '
+                               'Chrome/58.0.3029.110 Safari/537.3')
             }
             if self.video:
                 command = [
